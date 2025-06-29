@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Blog Tech & Innovation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutral & Subtle Tech Blue -->
+    <!-- Application Structure Plan: The SPA is structured linearly with clear sections: Header (navigation), Hero (introduction), Latest Articles (dynamic content display), About (blog purpose), Contact (engagement), and Footer. This single-page design with smooth scrolling navigation ensures ease of use and quick access to all key information, mimicking a modern blog landing page. This structure is ideal for presenting automated content as new articles can simply be added to the JavaScript data array (or fetched from a simple API/Google Sheet). -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Blog articles (textual content) -> Goal: Inform/Engage -> Presentation: Article cards with title, snippet, and read more button -> Interaction: Click to display full article content in a modal/overlay. This keeps the main page clean while allowing deep dives.
+        - Report Info: Blog description, contact info (textual content) -> Goal: Inform/Provide contact -> Presentation: Dedicated sections with clear headings and text blocks -> Interaction: Scroll navigation.
+        - Library/Method: Vanilla JS for dynamic content loading, modal management, and smooth scrolling. Tailwind CSS for responsive layout and styling. No Chart.js or Plotly.js are used as the primary content is textual articles, not numerical data suitable for charts. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFCEF; /* Very light yellow-cream */
+            color: #333;
+        }
+        .text-primary {
+            color: #6B7280; /* Gray-500 */
+        }
+        .bg-accent {
+            background-color: #60A5FA; /* Blue-400 */
+        }
+        .hover\:bg-accent-dark:hover {
+            background-color: #3B82F6; /* Blue-500 */
+        }
+        .text-accent {
+            color: #60A5FA; /* Blue-400 */
+        }
+        .shadow-custom {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        }
+        .article-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .article-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.1);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #FDFCEF;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease-out;
+        }
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="leading-normal tracking-normal">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md py-4 sticky top-0 z-50">
+        <div class="container mx-auto flex justify-between items-center px-4 md:px-8">
+            <a href="#hero" class="text-2xl font-bold text-gray-800">Mon <span class="text-accent">Blog Tech</span></a>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#hero" class="text-primary hover:text-accent font-medium transition duration-300 ease-in-out">Accueil</a></li>
+                    <li><a href="#blog" class="text-primary hover:text-accent font-medium transition duration-300 ease-in-out">Blog</a></li>
+                    <li><a href="#about" class="text-primary hover:text-accent font-medium transition duration-300 ease-in-out">À Propos</a></li>
+                    <li><a href="#contact" class="text-primary hover:text-accent font-medium transition duration-300 ease-in-out">Contact</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative bg-gradient-to-r from-blue-50 to-indigo-50 min-h-screen flex items-center justify-center text-center p-4">
+        <div class="max-w-4xl mx-auto z-10">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-extrabold text-gray-800 leading-tight mb-4">
+                Découvrez les Dernières <span class="text-accent">Innovations Tech</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-primary mb-8 max-w-2xl mx-auto">
+                Votre source quotidienne pour les actualités, les analyses et les tendances du monde de la technologie et de l'innovation.
+            </p>
+            <a href="#blog" class="inline-block bg-accent text-white px-8 py-4 rounded-lg text-lg font-semibold hover:bg-accent-dark transition duration-300 ease-in-out shadow-lg">
+                Lire les Articles
+            </a>
+        </div>
+        <div class="absolute inset-0 opacity-10">
+            <span class="absolute w-24 h-24 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl top-10 left-1/4 animate-blob"></span>
+            <span class="absolute w-24 h-24 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl bottom-20 right-1/4 animate-blob animation-delay-2000"></span>
+            <span class="absolute w-28 h-28 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-blob animation-delay-4000"></span>
+        </div>
+    </section>
+
+    <!-- Blog Section -->
+    <section id="blog" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4 md:px-8">
+            <h2 class="text-4xl font-bold text-center text-gray-800 mb-12">Derniers Articles</h2>
+            <p class="text-lg text-primary text-center mb-8 max-w-2xl mx-auto">
+                Explorez nos dernières publications. Cette section affiche les articles générés, vous permettant de cliquer pour en lire le contenu complet.
+            </p>
+            <div id="articles-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Articles will be loaded here by JavaScript -->
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 bg-white">
+        <div class="container mx-auto px-4 md:px-8 text-center max-w-3xl">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">À Propos de Notre Blog</h2>
+            <p class="text-lg text-primary mb-6">
+                Mon Blog Tech & Innovation est votre destination pour tout ce qui concerne le futur. Nous explorons les avancées technologiques, l'intelligence artificielle, l'automatisation, la durabilité et bien plus encore. Notre mission est de vous informer, de vous inspirer et de vous aider à comprendre le monde en constante évolution de la technologie.
+            </p>
+            <p class="text-lg text-primary">
+                Ce blog est conçu pour être une plateforme évolutive, capable d'intégrer des outils d'automatisation IA pour une publication de contenu efficace et régulière.
+            </p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4 md:px-8 text-center max-w-2xl">
+            <h2 class="text-4xl font-bold text-gray-800 mb-8">Contactez-nous</h2>
+            <p class="text-lg text-primary mb-8">
+                Vous avez des questions, des suggestions ou souhaitez collaborer ? N'hésitez pas à nous envoyer un message.
+            </p>
+            <form class="space-y-6 bg-white p-8 rounded-lg shadow-custom">
+                <div>
+                    <input type="text" placeholder="Votre Nom" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent">
+                </div>
+                <div>
+                    <input type="email" placeholder="Votre Email" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent">
+                </div>
+                <div>
+                    <textarea placeholder="Votre Message" rows="5" class="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-accent"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-accent text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-accent-dark transition duration-300 ease-in-out shadow-md">
+                    Envoyer le Message
+                </button>
+            </form>
+            <p class="mt-8 text-sm text-primary">Note: Ce formulaire est une démonstration et ne dispose pas d'un traitement côté serveur.</p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="container mx-auto text-center px-4 md:px-8">
+            <p>&copy; 2025 Mon Blog Tech & Innovation. Tous droits réservés.</p>
+            <p class="mt-2 text-sm">Construit avec passion et IA pour vous informer.</p>
+        </div>
+    </footer>
+
+    <!-- Article Modal -->
+    <div id="article-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-modal">&times;</span>
+            <h3 id="modal-title" class="text-3xl font-bold text-gray-800 mb-4"></h3>
+            <p class="text-sm text-gray-500 mb-6">Publié le <span id="modal-date"></span></p>
+            <img id="modal-image" src="" alt="Article Image" class="w-full h-auto rounded-lg mb-6 max-h-60 object-cover">
+            <div id="modal-content" class="prose max-w-none text-gray-700 leading-relaxed"></div>
+        </div>
+    </div>
+
+    <script>
+        const articlesData = [
+            {
+                id: 'ia-creativite',
+                title: 'L\'IA et la Créativité : Une Nouvelle Ère pour les Artistes',
+                date: '10 juillet 2025',
+                image: 'https://placehold.co/600x400/94A3B8/FFFFFF?text=IA+Creativite',
+                excerpt: 'L\'intelligence artificielle transforme le paysage créatif, offrant de nouveaux outils et perspectives aux artistes, musiciens et écrivains. Découvrez comment l\'IA devient un collaborateur...',
+                content: `
+                    <p>L'intelligence artificielle n'est plus seulement un outil pour les tâches répétitives ou l'analyse de données ; elle est devenue une muse pour de nombreux créateurs. Des logiciels de composition musicale aux générateurs d'images artistiques, l'IA ouvre des portes à des formes d'expression inédites.</p>
+                    <p>Les artistes peuvent désormais expérimenter avec des styles, générer des idées préliminaires ou même créer des œuvres complètes avec l'assistance de l'IA. Cette synergie entre l'humain et la machine ne remplace pas la créativité, elle l'augmente, permettant aux créateurs d'explorer des territoires inaccessibles auparavant.</p>
+                    <p>Bien sûr, cela soulève des questions éthiques et philosophiques sur la paternité des œuvres, mais une chose est certaine : l'IA est en train de redéfinir ce que signifie "créer".</p>
+                    <ul>
+                        <li>Génération d'idées</li>
+                        <li>Assistance à la composition</li>
+                        <li>Exploration de styles</li>
+                        <li>Optimisation des processus créatifs</li>
+                    </ul>
+                    <p>Le futur de l'art pourrait bien être une collaboration constante avec des intelligences non humaines, menant à des résultats surprenants et magnifiques.</p>
+                `
+            },
+            {
+                id: 'blockchain-energie',
+                title: 'Blockchain et Énergie : Vers un Futur Décentralisé',
+                date: '05 juillet 2025',
+                image: 'https://placehold.co/600x400/4B5563/FFFFFF?text=Blockchain+Energie',
+                excerpt: 'La technologie blockchain, souvent associée aux cryptomonnaies, a le potentiel de révolutionner le secteur de l\'énergie en permettant des transactions décentralisées et plus transparentes...',
+                content: `
+                    <p>La blockchain offre une opportunité unique de transformer la manière dont l'énergie est produite, distribuée et consommée. En créant un registre distribué et immuable des transactions, elle peut faciliter l'échange d'énergie peer-to-peer, la gestion des réseaux intelligents et la traçabilité de l'énergie verte.</p>
+                    <p>Imaginez un futur où votre panneau solaire peut vendre directement l'excédent d'électricité à votre voisin, sans intermédiaire. La blockchain rend cela possible en assurant la confiance et la transparence entre les participants.</p>
+                    <p>De plus, elle peut jouer un rôle crucial dans la gestion des micro-réseaux et l'optimisation de la consommation énergétique, contribuant ainsi à une transition plus rapide vers des sources d'énergie renouvelables.</p>
+                    <p>Bien que des défis réglementaires et techniques subsistent, le potentiel de la blockchain dans le secteur énergétique est immense, promettant un avenir plus efficient et durable.</p>
+                `
+            },
+            {
+                id: 'quantique-cybersecurite',
+                title: 'L\'Impact de l\'Informatique Quantique sur la Cybersécurité',
+                date: '01 juillet 2025',
+                image: 'https://placehold.co/600x400/1F2937/FFFFFF?text=Quantique+Securite',
+                excerpt: 'L\'informatique quantique promet des avancées révolutionnaires, mais elle représente aussi une menace potentielle pour les méthodes de chiffrement actuelles. Comment nous préparons-nous à cette nouvelle ère de cybersécurité ?',
+                content: `
+                    <p>L'avènement des ordinateurs quantiques, capables de résoudre des problèmes que même les supercalculateurs actuels ne peuvent pas gérer, soulève des inquiétudes majeures pour la cybersécurité. Les algorithmes de chiffrement qui protègent nos données aujourd'hui (comme RSA) pourraient être vulnérables aux attaques des machines quantiques.</p>
+                    <p>Cela a conduit au développement de la cryptographie post-quantique, une nouvelle branche de la cryptographie qui vise à créer des algorithmes résistants aux attaques quantiques. Les gouvernements et les entreprises du monde entier investissent massivement dans cette recherche pour sécuriser l'avenir de nos communications.</p>
+                    <p>Bien que l'ordinateur quantique universel capable de briser nos chiffrements ne soit pas encore une réalité quotidienne, il est crucial de commencer à se préparer dès maintenant pour la transition vers des systèmes post-quantiques. La sécurité de nos informations en dépend.</p>
+                `
+            }
+        ];
+
+        // Pour la mise en place de l'automatisation avec Google Sheets,
+        // vous pouvez commenter le tableau articlesData ci-dessus et utiliser ce code.
+        // Remplacez 'YOUR_GOOGLE_SHEET_ID' par l'ID de votre feuille Google.
+        // Assurez-vous que la feuille est "Publiée sur le web" au format CSV ou JSON.
+        const GOOGLE_SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/YOUR_GOOGLE_SHEET_ID/pub?gid=0&single=true&output=csv'; // Changez YOUR_GOOGLE_SHEET_ID
+
+        async function fetchArticlesFromGoogleSheet() {
+            try {
+                const response = await fetch(GOOGLE_SHEET_URL);
+                const csvText = await response.text();
+                return parseCsv(csvText);
+            } catch (error) {
+                console.error("Erreur de chargement des articles depuis Google Sheet:", error);
+                // Retourne les articles statiques si le chargement échoue
+                return articlesData;
+            }
+        }
+
+        function parseCsv(csv) {
+            const lines = csv.split('\n').filter(line => line.trim() !== '');
+            if (lines.length < 2) return []; // No header or data
+            const headers = lines[0].split(',').map(header => header.trim().toLowerCase());
+            const parsedArticles = [];
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                if (values.length !== headers.length) continue; // Skip malformed rows
+                const article = {};
+                headers.forEach((header, index) => {
+                    article[header] = values[index].trim();
+                });
+                parsedArticles.push(article);
+            }
+            return parsedArticles;
+        }
+
+        function displayArticles(articles) {
+            const articlesContainer = document.getElementById('articles-container');
+            articlesContainer.innerHTML = ''; // Clear existing articles
+            articles.forEach(article => {
+                const articleCard = `
+                    <div class="bg-white rounded-lg shadow-custom overflow-hidden article-card cursor-pointer" data-id="${article.id}">
+                        <img src="${article.image || 'https://placehold.co/600x400/E5E7EB/6B7280?text=Article+Image'}" alt="${article.title}" class="w-full h-48 object-cover">
+                        <div class="p-6">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">${article.title}</h3>
+                            <p class="text-sm text-gray-500 mb-4">${article.date}</p>
+                            <p class="text-primary text-base mb-4">${article.excerpt}</p>
+                            <button class="text-accent hover:text-blue-600 font-semibold inline-flex items-center">
+                                Lire la suite
+                                <span class="ml-1">→</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                articlesContainer.innerHTML += articleCard;
+            });
+
+            document.querySelectorAll('.article-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const articleId = card.dataset.id;
+                    const article = articles.find(a => a.id === articleId);
+                    if (article) {
+                        document.getElementById('modal-title').innerText = article.title;
+                        document.getElementById('modal-date').innerText = article.date;
+                        document.getElementById('modal-image').src = article.image || 'https://placehold.co/600x400/E5E7EB/6B7280?text=Article+Image';
+                        document.getElementById('modal-content').innerHTML = article.content;
+                        document.getElementById('article-modal').style.display = 'flex';
+                    }
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Vérifier si vous utilisez les articles statiques ou ceux de Google Sheet
+            // Pour commencer, utilisez articlesData (décommenter la ligne suivante)
+            // displayArticles(articlesData);
+
+            // Lorsque vous êtes prêt pour l'automatisation via Google Sheet,
+            // décommentez la ligne suivante et assurez-vous que GOOGLE_SHEET_URL est correct.
+            const fetchedArticles = await fetchArticlesFromGoogleSheet();
+            displayArticles(fetchedArticles);
+
+
+            document.getElementById('close-modal').addEventListener('click', () => {
+                document.getElementById('article-modal').style.display = 'none';
+            });
+
+            document.getElementById('article-modal').addEventListener('click', (event) => {
+                if (event.target === document.getElementById('article-modal')) {
+                    document.getElementById('article-modal').style.display = 'none';
+                }
+            });
+
+            // Smooth scrolling for navigation
+            document.querySelectorAll('nav a').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
+</body> 
+</html>
